@@ -28,6 +28,10 @@ func resourceLease() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"server": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -36,10 +40,11 @@ func resourceLeaseCreate(d *schema.ResourceData, m interface{}) error {
 	address := d.Get("address").(string)
 	macaddress := d.Get("macaddress").(string)
 	comment := d.Get("comment").(string)
+	server := d.Get("server").(string)
 
 	c := m.(client.Mikrotik)
 
-	lease, err := c.AddDhcpLease(address, macaddress, comment)
+	lease, err := c.AddDhcpLease(address, macaddress, comment, server)
 	if err != nil {
 		return err
 	}
@@ -73,8 +78,9 @@ func resourceLeaseUpdate(d *schema.ResourceData, m interface{}) error {
 	macaddress := d.Get("macaddress").(string)
 	address := d.Get("address").(string)
 	comment := d.Get("comment").(string)
+	server := d.Get("server").(string)
 
-	lease, err := c.UpdateDhcpLease(d.Id(), address, macaddress, comment)
+	lease, err := c.UpdateDhcpLease(d.Id(), address, macaddress, comment, server)
 
 	if err != nil {
 		return err
@@ -102,5 +108,6 @@ func leaseToData(lease *client.DhcpLease, d *schema.ResourceData) error {
 	d.Set("comment", lease.Comment)
 	d.Set("address", lease.Address)
 	d.Set("macaddress", lease.MacAddress)
+	d.Set("server", lease.Server)
 	return nil
 }

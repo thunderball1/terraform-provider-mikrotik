@@ -13,15 +13,16 @@ type DhcpLease struct {
 	Address    string
 	MacAddress string
 	Comment    string
+	Server     string
 }
 
-func (client Mikrotik) AddDhcpLease(address, macaddress, name string) (*DhcpLease, error) {
+func (client Mikrotik) AddDhcpLease(address, macaddress, name string, server string) (*DhcpLease, error) {
 	c, err := client.getMikrotikClient()
 
 	if err != nil {
 		return nil, err
 	}
-	cmd := strings.Split(fmt.Sprintf("/ip/dhcp-server/lease/add =address=%s =mac-address=%s =comment=%s", address, macaddress, name), " ")
+	cmd := strings.Split(fmt.Sprintf("/ip/dhcp-server/lease/add =address=%s =mac-address=%s =comment=%s =server=%s", address, macaddress, name, server), " ")
 	log.Printf("[INFO] Running the mikrotik command: `%s`", cmd)
 	r, err := c.RunArgs(cmd)
 
@@ -67,6 +68,7 @@ func (client Mikrotik) FindDhcpLease(id string) (*DhcpLease, error) {
 	address := ""
 	macaddress := ""
 	comment := ""
+	server := ""
 	for _, pair := range sentence.List {
 		if pair.Key == "address" {
 			address = pair.Value
@@ -77,6 +79,9 @@ func (client Mikrotik) FindDhcpLease(id string) (*DhcpLease, error) {
 		if pair.Key == "comment" {
 			comment = pair.Value
 		}
+		if pair.Key == "server" {
+			server = pair.Value
+		}
 	}
 
 	return &DhcpLease{
@@ -84,17 +89,18 @@ func (client Mikrotik) FindDhcpLease(id string) (*DhcpLease, error) {
 		MacAddress: macaddress,
 		Address:    address,
 		Comment:    comment,
+		Server:     server,
 	}, nil
 }
 
-func (client Mikrotik) UpdateDhcpLease(id, address, macaddress, comment string) (*DhcpLease, error) {
+func (client Mikrotik) UpdateDhcpLease(id, address, macaddress, comment string, server string) (*DhcpLease, error) {
 	c, err := client.getMikrotikClient()
 
 	if err != nil {
 		return nil, err
 	}
 
-	cmd := strings.Split(fmt.Sprintf("/ip/dhcp-server/lease/set =.id=%s =address=%s =mac-address=%s =comment=%s", id, address, macaddress, comment), " ")
+	cmd := strings.Split(fmt.Sprintf("/ip/dhcp-server/lease/set =.id=%s =address=%s =mac-address=%s =comment=%s =server=%s", id, address, macaddress, comment, server), " ")
 	log.Printf("[INFO] Running the mikrotik command: `%s`", cmd)
 	_, err = c.RunArgs(cmd)
 
